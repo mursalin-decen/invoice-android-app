@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Veltrix Wear Invoice</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--gold:#D4AF37;--dark:#1a1a2e;--bg:#f0f2f5;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);margin:0;padding:10px 10px 100px;}
+.card{max-width:600px;margin:auto;background:#fff;border-radius:20px;box-shadow:0 10px 35px rgba(141,25,25,0.13);overflow:hidden;}
+.hdr{background:var(--dark);padding:18px 18px 0;}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;}
+.brand{color:var(--gold);font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;}
+.brand-tag{color:#c8c5c5;font-size:9px;letter-spacing:2px;margin-top:2px;}
+.inv-label{color:var(--gold);font-size:24px;font-weight:900;letter-spacing:3px;}
+.hdr-bar{height:3px;background:linear-gradient(90deg,var(--gold),#f0d060);}
+.band{background:#222235;display:flex;justify-content:space-between;padding:12px 18px;gap:10px;}
+.band-lbl{color:#fffdfd;font-size:9px;text-transform:uppercase;letter-spacing:1px;}
+.band-val{color:#fff;font-size:12px;margin:2px 0 0;font-weight:600;}
+.band-sub{color:#fffcfc;font-size:10px;margin:1px 0 0;}
+.band-r{text-align:right;flex-shrink:0;}
+.fsec{padding:14px 14px 6px;border-bottom:1px solid #eee;}
+.frow{display:flex;gap:10px;}
+.frow .fld{flex:1;}
+.fld{margin-bottom:11px;}
+.fld label{display:block;font-size:10px;font-weight:700;color:#0b0b0b;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.fld input,.fld textarea{width:100%;padding:11px 12px;border:1.5px solid #434141;border-radius:10px;font-size:14px;background:#fafafa;outline:none;transition:border 0.2s;-webkit-appearance:none;}
+.fld input:focus,.fld textarea:focus{border-color:var(--gold);background:#fff8f0;}
+.fld textarea{resize:none;height:60px;font-family:inherit;}
+.sec-title{font-size:11px;font-weight:800;color:#2b2b2b;text-transform:uppercase;letter-spacing:2px;padding:12px 14px 8px;}
+.tsec{padding:4px 14px 14px;}
+.icard{background:#f9f9f9;border:1.5px solid #c8c8c8;border-radius:12px;padding:11px;margin-bottom:10px;position:relative;}
+.isl{position:absolute;top:10px;left:11px;font-size:10px;color:#646363;font-weight:800;}
+.iname{width:100%;margin-bottom:8px;padding:9px 10px 9px 28px;border:1.5px solid #5c5959;border-radius:8px;font-size:14px;-webkit-appearance:none;outline:none;background:white;}
+.iname:focus{border-color:var(--gold);}
+.irow{display:flex;gap:7px;align-items:flex-start;}
+.icol{flex:1;text-align:center;}
+.irow input{width:100%;padding:9px 6px;border:1.5px solid #373535;border-radius:8px;font-size:13px;text-align:center;-webkit-appearance:none;outline:none;background:white;}
+.irow input:focus{border-color:var(--gold);}
+.ilbl{font-size:9px;color:#060606;text-align:center;margin-top:3px;text-transform:uppercase;}
+.itbox{text-align:right;min-width:68px;}
+.itotal{font-weight:800;color:var(--dark);font-size:14px;padding-top:9px;}
+.rmbtn{position:absolute;top:7px;right:8px;background:none;border:none;font-size:15px;color:#ad0000;cursor:pointer;padding:3px 6px;line-height:1;}
+.rmbtn:active{color:#e74c3c;}
+.addbtn{width:100%;padding:12px;background:#e5e0e0;border:2px dashed #5f5959;border-radius:12px;font-size:13px;font-weight:700;color:#010101;cursor:pointer;letter-spacing:1px;}
+.summary{margin:0 14px 4px;background:#fafafa;border-radius:12px;border:1.5px solid #eee;overflow:hidden;}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:13px;border-bottom:1px solid #f0f0f0;}
+.srow:last-child{border:none;}
+.srow.grand{background:var(--dark);color:#fff;font-size:15px;font-weight:700;}
+.srow.grand .gval{color:var(--gold);}
+.delinput{width:85px;padding:7px 10px;border:1.5px solid #232121;border-radius:8px;font-size:13px;text-align:right;-webkit-appearance:none;outline:none;}
+.delinput:focus{border-color:var(--gold);}
+.xsec{padding:12px 14px 16px;border-top:1px solid #eee;}
+.xsec label{font-size:10px;font-weight:700;color:#111111;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
+.xsec textarea{width:100%;padding:10px 12px;border:1.5px solid #201d1d;border-radius:10px;font-size:13px;background:#fafafa;outline:none;margin-bottom:10px;-webkit-appearance:none;font-family:inherit;resize:none;height:55px;}
+.xsec textarea:focus{border-color:var(--gold);}
+.drow{padding:6px 14px 12px;text-align:right;font-size:13px;color:#000000;}
+.navbar{position:fixed;bottom:0;left:0;right:0;display:flex;gap:10px;padding:12px 14px;background:white;border-top:1px solid #eee;box-shadow:0 -4px 20px rgba(0,0,0,0.09);z-index:100;}
+.btn{flex:1;padding:15px;border:none;border-radius:12px;font-weight:800;cursor:pointer;text-transform:uppercase;font-size:12px;letter-spacing:1px;}
+.btn:active{transform:scale(0.97);}
+.btnreset{background:#f0f0f0;color:#d70e0e;}
+.btnpdf{background:var(--dark);color:var(--gold);box-shadow:0 4px 15px rgba(0,0,0,0.2);}
+.sbox{max-width:600px;margin:14px auto 0;background:white;padding:14px;border-radius:18px;box-shadow:0 4px 20px rgba(8,20,33,0.981);}
+.sbox h3{margin:0 0 10px;font-size:13px;border-bottom:2px solid var(--gold);padding-bottom:8px;}
+.fitem{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;}
+.fitem:last-child{border:none;}
+.fitem small{color:#bbb;font-size:11px;}
+.finv{font-size:11px;color:#aaa;}
+.fitem .amt{color:var(--gold);font-weight:800;font-size:14px;}
+.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:white;padding:11px 22px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;border:1px solid var(--gold);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="brand">VELTRIX WEAR</div>
+        <div class="brand-tag">FASHION &amp; LIFESTYLE</div>
+      </div>
+      <div class="inv-label">INVOICE</div>
+    </div>
+    <div class="hdr-bar"></div>
+  </div>
+  <div class="band">
+    <div style="flex:1;min-width:0;">
+      <div class="band-lbl">Invoice To</div>
+      <div class="band-val" id="bandName">-- Customer Name --</div>
+      <div class="band-sub" id="bandSub">Phone / Address</div>
+    </div>
+    <div class="band-r">
+      <div class="band-lbl">Invoice #</div>
+      <div class="band-val" id="bandInvNo">--</div>
+      <div class="band-lbl" style="margin-top:5px;">Date</div>
+      <div class="band-sub" id="bandDate" style="color:#ccc;">--</div>
+    </div>
+  </div>
+  <div class="fsec">
+    <div class="frow">
+      <div class="fld">
+        <label>Customer Name</label>
+        <input type="text" id="nameIn" placeholder="Rahim Uddin" oninput="liveUpdate()" autocomplete="off">
+      </div>
+      <div class="fld" style="max-width:110px;">
+        <label>Invoice #</label>
+        <input type="text" id="invNo" placeholder="1001" oninput="liveUpdate()">
+      </div>
+    </div>
+    <div class="fld">
+      <label>Phone Number</label>
+      <input type="tel" id="phoneIn" placeholder="01700-000000" oninput="liveUpdate()">
+    </div>
+    <div class="fld">
+      <label>Address</label>
+      <textarea id="addrIn" placeholder="Delivery address..." oninput="liveUpdate()"></textarea>
+    </div>
+  </div>
+  <div class="sec-title">Items</div>
+  <div class="tsec">
+    <div id="itemsContainer"></div>
+    <button class="addbtn" onclick="addItem()">+ Add Item</button>
+  </div>
+  <div class="summary">
+    <div class="srow">
+      <span style="color:#080808;">Subtotal</span>
+      <span id="subtotal" style="font-weight:700;">0.00 TK</span>
+    </div>
+    <div class="srow">
+      <span style="color:#040404;">Delivery Charge</span>
+      <input type="number" class="delinput" id="delIn" value="0" oninput="calc()" placeholder="0">
+    </div>
+    <div class="srow grand">
+      <span>Grand Total</span>
+      <span class="gval" id="grandTotal">0.00 TK</span>
+    </div>
+  </div>
+  <div class="drow">Date: <span id="dateOut"></span></div>
+  <div class="xsec">
+    <label>Terms &amp; Conditions</label>
+    <textarea id="termsIn" placeholder="e.g. No refund after 3 days. Delivery 2-3 working days."></textarea>
+  </div>
+</div>
+<div class="sbox">
+  <h3>Saved Invoices</h3>
+  <div id="historyList"><p style="color:#000000;font-size:12px;text-align:center;margin:8px 0;">No invoices yet.</p></div>
+</div>
+<div class="navbar">
+  <button class="btn btnreset" onclick="resetForm()">Reset</button>
+  <button class="btn btnpdf" onclick="generatePDF()">Download PDF</button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var jsPDF = window.jspdf.jsPDF;
+var itemCount = 0;
+var autoInvNum = Math.floor(10000 + Math.random() * 89999);
+var todayStr = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'});
+
+document.getElementById('dateOut').innerText  = todayStr;
+document.getElementById('bandDate').innerText = todayStr;
+document.getElementById('invNo').value        = autoInvNum;
+document.getElementById('bandInvNo').innerText= '#' + autoInvNum;
+
+addItem();
+
+function liveUpdate() {
+  var n   = document.getElementById('nameIn').value  || '-- Customer Name --';
+  var ph  = document.getElementById('phoneIn').value || '';
+  var ad  = document.getElementById('addrIn').value  || '';
+  var inv = document.getElementById('invNo').value   || '--';
+  document.getElementById('bandName').innerText  = n;
+  var sub = [ph, ad].filter(function(x){return x;}).join('  -  ');
+  document.getElementById('bandSub').innerText   = sub || 'Phone / Address';
+  document.getElementById('bandInvNo').innerText = inv ? '#' + inv : '--';
+}
+
+function addItem() {
+  itemCount++;
+  var id  = itemCount;
+  var div = document.createElement('div');
+  div.className = 'icard';
+  div.id = 'item-' + id;
+  div.innerHTML =
+    '<span class="isl">' + id + '.</span>' +
+    '<button class="rmbtn" onclick="removeItem(' + id + ')">X</button>' +
+    '<input type="text" class="iname" placeholder="Product name (e.g. T-Shirt Blue XL)" id="name-' + id + '">' +
+    '<div class="irow">' +
+      '<div class="icol">' +
+        '<input type="number" value="1" min="1" id="qty-' + id + '" oninput="calc()">' +
+        '<div class="ilbl">Qty</div>' +
+      '</div>' +
+      '<div class="icol">' +
+        '<input type="number" value="0" min="0" id="price-' + id + '" oninput="calc()">' +
+        '<div class="ilbl">Unit Price (TK)</div>' +
+      '</div>' +
+      '<div class="itbox">' +
+        '<div class="itotal" id="total-' + id + '">0.00</div>' +
+        '<div class="ilbl">Total TK</div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('itemsContainer').appendChild(div);
+  calc();
+}
+
+function removeItem(id) {
+  var el = document.getElementById('item-' + id);
+  if (el) el.remove();
+  calc();
+}
+
+function calc() {
+  var sub = 0;
+  var cards = document.getElementById('itemsContainer').querySelectorAll('.icard');
+  for (var i = 0; i < cards.length; i++) {
+    var id = cards[i].id.replace('item-', '');
+    var q  = parseFloat(document.getElementById('qty-'   + id).value) || 0;
+    var p  = parseFloat(document.getElementById('price-' + id).value) || 0;
+    var t  = q * p;
+    document.getElementById('total-' + id).innerText = t.toFixed(2);
+    sub += t;
+  }
+  var d = parseFloat(document.getElementById('delIn').value) || 0;
+  document.getElementById('subtotal').innerText  = sub.toFixed(2) + ' TK';
+  document.getElementById('grandTotal').innerText= (sub + d).toFixed(2) + ' TK';
+}
+
+function generatePDF() {
+  var name   = document.getElementById('nameIn').value.trim()  || 'Customer';
+  var phone  = document.getElementById('phoneIn').value.trim() || '';
+  var addr   = document.getElementById('addrIn').value.trim()  || '';
+  var invNo  = document.getElementById('invNo').value.trim()   || String(autoInvNum);
+  var terms  = document.getElementById('termsIn').value.trim() || 'Thank you for your business.';
+  var subRaw = parseFloat(document.getElementById('subtotal').innerText) || 0;
+  var delRaw = parseFloat(document.getElementById('delIn').value) || 0;
+  var grand  = subRaw + delRaw;
+
+  var doc = new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  var pw  = doc.internal.pageSize.getWidth();
+  var ph  = doc.internal.pageSize.getHeight();
+
+  /* ── রং পরিবর্তন: সব টেক্সট এখন স্পষ্ট ── */
+  var DARK   = [26,26,46];       // header bg
+  var DARK2  = [34,34,55];       // band bg
+  var GOLD   = [180,140,20];     // gold (PDF-এ একটু গাঢ় যাতে সুন্দর দেখায়)
+  var LGREY  = [235,236,242];    // table row alternate
+  var MGREY  = [160,160,175];    // divider line
+  var WHITE  = [255,255,255];
+  var BLACK  = [10,10,10];       // সব মূল টেক্সট — কালো
+  var DKBLUE = [26,26,46];       // section label
+  var SUBTEXT= [80,80,100];      // secondary টেক্সট (আগে gray ছিল, এখন গাঢ়)
+
+  /* ── Header ── */
+  doc.setFillColor(DARK[0],DARK[1],DARK[2]);
+  doc.rect(0,0,pw,36,'F');
+  doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.rect(0,36,pw,3,'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.text('VELTRIX WEAR', 14, 16);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(200,200,220);          // ← হেডারে হালকা সাদা (bg গাঢ় বলে ঠিক আছে)
+  doc.text('FASHION & LIFESTYLE', 14, 22);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(26);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.text('INVOICE', pw-14, 22, {align:'right'});
+
+  /* ── Info Band ── */
+  doc.setFillColor(DARK2[0],DARK2[1],DARK2[2]);
+  doc.rect(0,39,pw,38,'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.text('INVOICE TO', 14, 47);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(WHITE[0],WHITE[1],WHITE[2]);
+  doc.text(name.substring(0,28), 14, 55);
+
+  var contactLine = [phone, addr.substring(0,34)].filter(function(x){return x;}).join('  |  ');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(WHITE[0],WHITE[1],WHITE[2]);
+  if (contactLine) doc.text(contactLine, 14, 63);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.text('INVOICE #', pw-14, 47, {align:'right'});
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(WHITE[0],WHITE[1],WHITE[2]);
+  doc.text('#'+invNo, pw-14, 55, {align:'right'});
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.text('DATE', pw-14, 63, {align:'right'});
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(WHITE[0],WHITE[1],WHITE[2]);
+  doc.text(todayStr, pw-14, 70, {align:'right'});
+
+  /* ── Table Header ── */
+  var tY = 86;
+  var C_SL    = 16;
+  var C_DESC  = 24;
+  var C_PRICE = 130;
+  var C_QTY   = 158;
+  var C_TOT   = pw-12;
+
+  doc.setFillColor(LGREY[0],LGREY[1],LGREY[2]);
+  doc.rect(12,tY,pw-24,9,'F');
+  doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.rect(12,tY,3,9,'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);   // ← কালো
+  doc.text('SL.',               C_SL,    tY+6);
+  doc.text('ITEM DESCRIPTION',  C_DESC,  tY+6);
+  doc.text('UNIT PRICE',        C_PRICE, tY+6, {align:'center'});
+  doc.text('QTY',               C_QTY,   tY+6, {align:'center'});
+  doc.text('TOTAL',             C_TOT,   tY+6, {align:'right'});
+
+  /* ── Table Rows ── */
+  var y = tY + 16;
+  var sl = 0;
+  var cards = document.getElementById('itemsContainer').querySelectorAll('.icard');
+  for (var i = 0; i < cards.length; i++) {
+    sl++;
+    var cid   = cards[i].id.replace('item-','');
+    var pname = (document.getElementById('name-'  + cid).value  || '--').substring(0,30);
+    var qty   =  document.getElementById('qty-'   + cid).value  || '1';
+    var price = parseFloat(document.getElementById('price-' + cid).value || '0');
+    var total = parseFloat(document.getElementById('total-' + cid).innerText || '0');
+
+    if (sl % 2 === 0) {
+      doc.setFillColor(248,248,252);
+      doc.rect(12, y-5.5, pw-24, 11, 'F');
+    }
+
+    // SL নম্বর
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(SUBTEXT[0],SUBTEXT[1],SUBTEXT[2]);   // গাঢ় ধূসর
+    doc.text(String(sl), C_SL, y);
+
+    // পণ্যের নাম — কালো
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);
+    doc.text(pname, C_DESC, y);
+
+    // দাম — গাঢ়
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);
+    doc.text(price.toFixed(2)+' TK', C_PRICE, y, {align:'center'});
+    doc.text(String(qty),            C_QTY,   y, {align:'center'});
+
+    // মোট — বোল্ড কালো
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(DKBLUE[0],DKBLUE[1],DKBLUE[2]);
+    doc.text(total.toFixed(2)+' TK', C_TOT, y, {align:'right'});
+
+    doc.setDrawColor(LGREY[0],LGREY[1],LGREY[2]);
+    doc.setLineWidth(0.3);
+    doc.line(12, y+4.5, pw-12, y+4.5);
+    y += 13;
+  }
+
+  /* ── Totals Section ── */
+  y = Math.max(y+4, tY+70);
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.setLineWidth(0.7);
+  doc.line(12, y, pw-12, y);
+  y += 9;
+
+  var TX = 118;
+  var VX = pw-12;
+
+  // Subtotal
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);         // কালো লেবেল
+  doc.text('Sub Total:', TX, y);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);
+  doc.text(subRaw.toFixed(2)+' TK', VX, y, {align:'right'});
+  y += 8;
+
+  // Delivery
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);         // কালো লেবেল
+  doc.text('Delivery Charge:', TX, y);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);
+  doc.text(delRaw.toFixed(2)+' TK', VX, y, {align:'right'});
+  y += 7;
+
+  doc.setDrawColor(MGREY[0],MGREY[1],MGREY[2]);
+  doc.setLineWidth(0.3);
+  doc.line(TX-2, y, pw-12, y);
+  y += 6;
+
+  // Grand Total box
+  doc.setFillColor(DARK[0],DARK[1],DARK[2]);
+  doc.roundedRect(TX-4, y-5, (pw-12)-(TX-4), 12, 2, 2, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(WHITE[0],WHITE[1],WHITE[2]);
+  doc.text('GRAND TOTAL:', TX+1, y+3);
+  doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.setFontSize(11);
+  doc.text(grand.toFixed(2)+' TK', VX-2, y+3, {align:'right'});
+  y += 18;
+
+  /* ── Footer Section ── */
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.setLineWidth(0.5);
+  doc.line(12, y, pw-12, y);
+  y += 9;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);       // কালো
+  doc.text('Thank you for your business!', 14, y);
+  y += 10;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(BLACK[0],BLACK[1],BLACK[2]);       // কালো
+  doc.text('Terms & Conditions:', 14, y);
+  y += 5;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(SUBTEXT[0],SUBTEXT[1],SUBTEXT[2]); // গাঢ় ধূসর
+  var tLines = doc.splitTextToSize(terms, 100);
+  doc.text(tLines, 14, y);
+
+  /* ── Signature ── */
+  var signY = ph-26;
+  doc.setDrawColor(MGREY[0],MGREY[1],MGREY[2]);
+  doc.setLineWidth(0.4);
+  doc.line(pw-62, signY, pw-12, signY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(SUBTEXT[0],SUBTEXT[1],SUBTEXT[2]); // গাঢ় ধূসর
+  doc.text('Authorised Signature', pw-37, signY+5, {align:'center'});
+
+  /* ── Bottom bar ── */
+  doc.setFillColor(DARK[0],DARK[1],DARK[2]);
+  doc.rect(0, ph-13, pw, 13, 'F');
+  doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
+  doc.rect(0, ph-13, pw, 2, 'F');
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(7);
+  doc.setTextColor(200,200,215);   // ফুটারে হালকা (bg গাঢ় বলে ঠিক)
+  doc.text('VELTRIX WEAR  -  Fashion & Lifestyle  -  Invoice #'+invNo, pw/2, ph-4, {align:'center'});
+
+  /* ── Download (Mobile-safe) ── */
+  var filename = 'Veltrix_INV'+invNo+'_'+name.replace(/\s+/g,'_')+'.pdf';
+  var blob = doc.output('blob');
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 300);
+
+  saveHistory(name, invNo, grand.toFixed(2)+' TK');
+  showToast('Invoice #'+invNo+' Downloaded!');
+}
+
+function saveHistory(name, invNo, total) {
+  var list = document.getElementById('historyList');
+  if (list.querySelector('p')) list.innerHTML = '';
+  var time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  var item = document.createElement('div');
+  item.className = 'fitem';
+  item.innerHTML =
+    '<div><strong>'+name+'</strong><span class="finv"> - #'+invNo+'</span><br>'+
+    '<small>'+time+' - '+new Date().toLocaleDateString('en-GB')+'</small></div>'+
+    '<span class="amt">'+total+'</span>';
+  list.insertAdjacentElement('afterbegin', item);
+  autoInvNum++;
+  document.getElementById('invNo').value         = autoInvNum;
+  document.getElementById('bandInvNo').innerText = '#'+autoInvNum;
+}
+
+function resetForm() {
+  ['nameIn','phoneIn','addrIn','termsIn'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('delIn').value = '0';
+  document.getElementById('itemsContainer').innerHTML = '';
+  itemCount = 0;
+  addItem();
+  liveUpdate();
+  calc();
+  showToast('Form Reset');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.innerText = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
